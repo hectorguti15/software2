@@ -179,7 +179,8 @@ class _CartPageState extends State<CartPage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => PagoPage(cart: cart)));
+                                builder: (context) =>
+                                    PagoPage(cart: cart, total: total)));
                       },
                       child: const Text('Comprar',
                           style: TextStyle(fontSize: 18, color: Colors.white)),

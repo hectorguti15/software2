@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class PagoPage extends StatelessWidget {
   List<Map<String, dynamic>> cart;
-  PagoPage({required this.cart, super.key});
+  double total;
+  PagoPage({required this.total, required this.cart, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +38,6 @@ class PagoPage extends StatelessWidget {
                   ],
                 ),
               ),
-
               Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(
@@ -60,16 +60,17 @@ class PagoPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Número de pedido:'),
+                          //Todo traaer pedido del bakend
                           Text('#12345',
                               style: TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
                       const Divider(height: 24),
-                      const Row(
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Total:'),
-                          Text('S/. 45.90',
+                          Text('${total.toStringAsFixed(2)}',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
@@ -83,16 +84,15 @@ class PagoPage extends StatelessWidget {
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      const Text('2x Hamburguesa Clásica'),
-                      const Text('1x Refresco Grande'),
+                      ...cart.map((item) => Text(
+                            '${item['quantity']}x ${item['nombre']}',
+                            style: const TextStyle(fontSize: 16),
+                          )),
                     ],
                   ),
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // Botones de acción
               ElevatedButton.icon(
                 onPressed: () {
                   // TODO: Implementar envío de notificación
