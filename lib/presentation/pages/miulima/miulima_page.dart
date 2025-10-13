@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ulima_app/presentation/pages/historial/historial_page.dart';
 
 class MiulimaPage extends StatefulWidget {
   const MiulimaPage({super.key});
@@ -74,7 +75,14 @@ class _MiulimaPageState extends State<MiulimaPage> {
                 print("Pagos");
               },
               title: "Pagos",
-              icon: Icons.payment)
+              icon: Icons.payment),
+          ButtonMiUlima(
+              pressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HistorialPage()));
+              },
+              title: "Historial Pedidos",
+              icon: Icons.history)
         ],
       ),
     );
