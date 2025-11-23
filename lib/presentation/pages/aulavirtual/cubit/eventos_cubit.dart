@@ -25,9 +25,12 @@ class EventosCubit extends Cubit<EventosState> {
   Future<void> crear(String seccionId, Evento evento) async {
     try {
       await crearEvento(seccionId, evento);
-      await loadEventos(seccionId); // Recargar eventos
+      // Recargar eventos después de crear exitosamente
+      final eventos = await getEventos(seccionId);
+      emit(EventosLoaded(eventos));
     } catch (e) {
       emit(EventosError('Error al crear evento: $e'));
+      rethrow; // Permitir que la UI capture el error
     }
   }
 }

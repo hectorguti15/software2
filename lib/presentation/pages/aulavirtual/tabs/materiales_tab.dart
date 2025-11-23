@@ -104,7 +104,7 @@ class _MaterialesTabState extends State<MaterialesTab> {
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final nombre = nombreController.text.trim();
                 if (nombre.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -124,15 +124,32 @@ class _MaterialesTabState extends State<MaterialesTab> {
                   autorNombre: widget.usuario?.nombre ?? 'Usuario',
                 );
 
-                this.context.read<MaterialesCubit>().subir(
-                      widget.seccion.id,
-                      material,
-                    );
+                try {
+                  await this.context.read<MaterialesCubit>().subir(
+                        widget.seccion.id,
+                        material,
+                      );
 
-                Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Material subido exitosamente')),
-                );
+                  // Solo si llegamos aquí, fue exitoso
+                  Navigator.pop(dialogContext);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Material subido exitosamente')),
+                    );
+                  }
+                } catch (e) {
+                  // Error al subir
+                  Navigator.pop(dialogContext);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error al subir material: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: UlimaColors.orange,
@@ -177,29 +194,30 @@ class _MaterialesTabState extends State<MaterialesTab> {
                         label: 'PDF',
                         icon: Icons.picture_as_pdf,
                         isSelected: _filtroTipo == entity.TipoMaterial.pdf,
-                        onTap: () =>
-                            setState(() => _filtroTipo = entity.TipoMaterial.pdf),
+                        onTap: () => setState(
+                            () => _filtroTipo = entity.TipoMaterial.pdf),
                       ),
                       _FiltroChip(
                         label: 'Videos',
                         icon: Icons.video_library,
                         isSelected: _filtroTipo == entity.TipoMaterial.video,
-                        onTap: () =>
-                            setState(() => _filtroTipo = entity.TipoMaterial.video),
+                        onTap: () => setState(
+                            () => _filtroTipo = entity.TipoMaterial.video),
                       ),
                       _FiltroChip(
                         label: 'Imágenes',
                         icon: Icons.image,
                         isSelected: _filtroTipo == entity.TipoMaterial.imagen,
-                        onTap: () =>
-                            setState(() => _filtroTipo = entity.TipoMaterial.imagen),
+                        onTap: () => setState(
+                            () => _filtroTipo = entity.TipoMaterial.imagen),
                       ),
                       _FiltroChip(
                         label: 'Documentos',
                         icon: Icons.description,
-                        isSelected: _filtroTipo == entity.TipoMaterial.documento,
-                        onTap: () =>
-                            setState(() => _filtroTipo = entity.TipoMaterial.documento),
+                        isSelected:
+                            _filtroTipo == entity.TipoMaterial.documento,
+                        onTap: () => setState(
+                            () => _filtroTipo = entity.TipoMaterial.documento),
                       ),
                     ],
                   ),
@@ -214,8 +232,8 @@ class _MaterialesTabState extends State<MaterialesTab> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: UlimaColors.orange,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 ),
               ],

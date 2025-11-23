@@ -53,6 +53,9 @@ class AulavirtualRepositoryImpl implements AulavirtualRepository {
 
   @override
   Future<void> subirMaterial(String seccionId, Material material) async {
+    // Obtener usuario actual para autorId
+    final usuarioActual = await remoteDataSource.getUsuarioActual();
+
     String tipoString;
     switch (material.tipo) {
       case TipoMaterial.pdf:
@@ -77,6 +80,7 @@ class AulavirtualRepositoryImpl implements AulavirtualRepository {
       tipo: tipoString,
       url: material.url,
       fechaSubida: material.fechaSubida.toIso8601String(),
+      autorId: usuarioActual.id, // ✅ Incluir autorId del usuario actual
       autorNombre: material.autorNombre,
     );
     await remoteDataSource.subirMaterial(seccionId, model);
@@ -90,6 +94,9 @@ class AulavirtualRepositoryImpl implements AulavirtualRepository {
 
   @override
   Future<void> crearEvento(String seccionId, Evento evento) async {
+    // Obtener usuario actual para autorId
+    final usuarioActual = await remoteDataSource.getUsuarioActual();
+
     String tipoString;
     switch (evento.tipo) {
       case TipoEvento.entrega:
@@ -108,6 +115,7 @@ class AulavirtualRepositoryImpl implements AulavirtualRepository {
       descripcion: evento.descripcion,
       fecha: evento.fecha.toIso8601String(),
       tipo: tipoString,
+      autorId: usuarioActual.id, // ✅ Incluir autorId del usuario actual
     );
     await remoteDataSource.crearEvento(seccionId, model);
   }

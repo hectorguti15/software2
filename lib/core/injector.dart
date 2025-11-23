@@ -20,6 +20,7 @@ import 'package:ulima_app/domain/usecase/pedido_usecase.dart';
 import 'package:ulima_app/domain/usecase/resena_usecase.dart'
     as resena_usecases;
 import 'package:ulima_app/domain/usecase/usuario_usecase.dart';
+import 'package:ulima_app/presentation/cubit/usuario_cubit.dart';
 
 final injector = GetIt.instance;
 
@@ -76,4 +77,10 @@ void setup() {
   injector.registerLazySingleton(() => GetUsuarioActual(injector()));
   injector.registerLazySingleton(() => CambiarRolUsuario(injector()));
   injector.registerLazySingleton(() => GetUsuarioById(injector()));
+
+  // Usuario Cubit (singleton para toda la app)
+  injector.registerLazySingleton(() => UsuarioCubit(
+        getUsuarioActual: injector(),
+        cambiarRolUsuario: injector(),
+      ));
 }

@@ -119,7 +119,7 @@ class _CalendarioTabState extends State<CalendarioTab> {
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final titulo = tituloController.text.trim();
                 final descripcion = descripcionController.text.trim();
 
@@ -139,15 +139,32 @@ class _CalendarioTabState extends State<CalendarioTab> {
                   tipo: tipoSeleccionado,
                 );
 
-                this.context.read<EventosCubit>().crear(
-                      widget.seccion.id,
-                      evento,
-                    );
+                try {
+                  await this.context.read<EventosCubit>().crear(
+                        widget.seccion.id,
+                        evento,
+                      );
 
-                Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Evento creado exitosamente')),
-                );
+                  // Solo si llegamos aquí, fue exitoso
+                  Navigator.pop(dialogContext);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Evento creado exitosamente')),
+                    );
+                  }
+                } catch (e) {
+                  // Error al crear
+                  Navigator.pop(dialogContext);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error al crear evento: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: UlimaColors.orange,
@@ -296,7 +313,8 @@ class _CalendarioTabState extends State<CalendarioTab> {
                             const SizedBox(height: 16),
                             const Text(
                               'No hay eventos próximos',
-                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.grey),
                             ),
                             if (_puedeCrearEventos()) ...[
                               const SizedBox(height: 8),

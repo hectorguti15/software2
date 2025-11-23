@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ulima_app/core/injector.dart';
 import 'package:ulima_app/domain/entity/seccion_entity.dart';
-import 'package:ulima_app/domain/entity/usuario_entity.dart';
 import 'package:ulima_app/domain/usecase/aulavirtual_usecase.dart';
-import 'package:ulima_app/domain/usecase/usuario_usecase.dart';
+import 'package:ulima_app/presentation/cubit/usuario_cubit.dart';
+import 'package:ulima_app/presentation/cubit/usuario_state.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/cubit/eventos_cubit.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/cubit/materiales_cubit.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/cubit/mensajes_cubit.dart';
@@ -13,30 +13,10 @@ import 'package:ulima_app/presentation/pages/aulavirtual/tabs/chat_tab.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/tabs/materiales_tab.dart';
 import 'package:ulima_app/presentation/theme/colors.dart';
 
-class SeccionDetailPage extends StatefulWidget {
+class SeccionDetailPage extends StatelessWidget {
   final Seccion seccion;
 
   const SeccionDetailPage({super.key, required this.seccion});
-
-  @override
-  State<SeccionDetailPage> createState() => _SeccionDetailPageState();
-}
-
-class _SeccionDetailPageState extends State<SeccionDetailPage> {
-  Usuario? _usuario;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUsuario();
-  }
-
-  Future<void> _loadUsuario() async {
-    final usuario = await injector<GetUsuarioActual>()();
-    setState(() {
-      _usuario = usuario;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,19 +26,19 @@ class _SeccionDetailPageState extends State<SeccionDetailPage> {
           create: (context) => MensajesCubit(
             getMensajes: injector<GetMensajes>(),
             enviarMensaje: injector<EnviarMensaje>(),
-          )..loadMensajes(widget.seccion.id),
+          )..loadMensajes(seccion.id),
         ),
         BlocProvider(
           create: (context) => MaterialesCubit(
             getMateriales: injector<GetMateriales>(),
             subirMaterial: injector<SubirMaterial>(),
-          )..loadMateriales(widget.seccion.id),
+          )..loadMateriales(seccion.id),
         ),
         BlocProvider(
           create: (context) => EventosCubit(
             getEventos: injector<GetEventos>(),
             crearEvento: injector<CrearEvento>(),
-          )..loadEventos(widget.seccion.id),
+          )..loadEventos(seccion.id),
         ),
       ],
       child: DefaultTabController(
@@ -70,11 +50,11 @@ class _SeccionDetailPageState extends State<SeccionDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.seccion.nombre,
+                  seccion.nombre,
                   style: const TextStyle(fontSize: 16),
                 ),
                 Text(
-                  widget.seccion.codigo,
+                  seccion.codigo,
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
@@ -90,12 +70,18 @@ class _SeccionDetailPageState extends State<SeccionDetailPage> {
               ],
             ),
           ),
-          body: TabBarView(
-            children: [
-              ChatTab(seccion: widget.seccion, usuario: _usuario),
-              MaterialesTab(seccion: widget.seccion, usuario: _usuario),
-              CalendarioTab(seccion: widget.seccion, usuario: _usuario),
-            ],
+          body: BlocBuilder<UsuarioCubit, UsuarioState>(
+            builder: (context, state) {
+              final usuario = state is UsuarioLoaded ? state.usuario : null;
+
+              return TabBarView(
+                children: [
+                  ChatTab(seccion: seccion, usuario: usuario),
+                  MaterialesTab(seccion: seccion, usuario: usuario),
+                  CalendarioTab(seccion: seccion, usuario: usuario),
+                ],
+              );
+            },
           ),
         ),
       ),

@@ -57,12 +57,34 @@ class _CartPageState extends State<CartPage> {
                                     width: 70,
                                     height: 70,
                                     fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        width: 70,
+                                        height: 70,
+                                        color: Colors.grey[200],
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            value: loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                                : null,
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                     errorBuilder: (_, __, ___) => Container(
                                       width: 70,
                                       height: 70,
                                       color: Colors.grey[200],
-                                      child: const Icon(Icons.image,
-                                          color: Colors.grey),
+                                      child: const Icon(Icons.restaurant,
+                                          color: Colors.grey, size: 32),
                                     ),
                                   ),
                                 ),

@@ -1,18 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ulima_app/domain/entity/menu_entity.dart';
 import 'package:ulima_app/domain/usecase/menu_usecase.dart';
+import 'menu_state.dart';
 
-class MenuCubit extends Cubit<List<MenuItem>> {
+class MenuCubit extends Cubit<MenuState> {
   final GetMenuItems getMenuItemsUseCase;
 
-  MenuCubit({required this.getMenuItemsUseCase}) : super([]);
+  MenuCubit({required this.getMenuItemsUseCase}) : super(MenuInitial());
 
-  void getMenuItems() async {
+  Future<void> getMenuItems() async {
     try {
+      emit(MenuLoading());
       final items = await getMenuItemsUseCase();
-      emit(items);
+      emit(MenuLoaded(items));
     } catch (e) {
-      emit([]);
+      emit(MenuError('Error al cargar el menú: $e'));
     }
   }
 }

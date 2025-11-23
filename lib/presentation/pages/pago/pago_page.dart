@@ -196,18 +196,36 @@ class _PagoPageState extends State<PagoPage> {
             ElevatedButton.icon(
               onPressed: _pedidoCreado && _codigoPedido != null
                   ? () async {
-                      final repository = injector<PedidoRepository>();
-                      final enviarNotificacion =
-                          EnviarNotificacion(repository, _codigoPedido!);
-                      await enviarNotificacion.call();
-                      final status = await Permission.notification.status;
-                      if (!status.isGranted) {
-                        await Permission.notification.request();
+                      try {
+                        final repository = injector<PedidoRepository>();
+                        final enviarNotificacion =
+                            EnviarNotificacion(repository, _codigoPedido!);
+                        await enviarNotificacion.call();
+
+                        final status = await Permission.notification.status;
+                        if (!status.isGranted) {
+                          await Permission.notification.request();
+                        }
+
+                        await showOrderNotification();
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Notificación enviada')),
+                          );
+                        }
+                      } catch (e) {
+                        print('[PagoPage] Error al enviar notificación: $e');
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error al enviar notificación: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       }
-                      showOrderNotification();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Notificación enviada')),
-                      );
                     }
                   : null,
               icon: const Icon(Icons.notifications),
@@ -223,13 +241,29 @@ class _PagoPageState extends State<PagoPage> {
             ElevatedButton.icon(
               onPressed: _pedidoCreado && _codigoPedido != null
                   ? () async {
-                      final repository = injector<PedidoRepository>();
-                      final generarYEnviarBoleta =
-                          GenerarYEnviarBoleta(repository, _codigoPedido!);
-                      await generarYEnviarBoleta.call();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Boleta enviada')),
-                      );
+                      try {
+                        final repository = injector<PedidoRepository>();
+                        final generarYEnviarBoleta =
+                            GenerarYEnviarBoleta(repository, _codigoPedido!);
+                        await generarYEnviarBoleta.call();
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Boleta generada exitosamente')),
+                          );
+                        }
+                      } catch (e) {
+                        print('[PagoPage] Error al generar boleta: $e');
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error al generar boleta: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
                     }
                   : null,
               icon: const Icon(Icons.receipt_long),

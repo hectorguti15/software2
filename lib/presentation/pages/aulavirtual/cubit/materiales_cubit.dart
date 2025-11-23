@@ -25,9 +25,12 @@ class MaterialesCubit extends Cubit<MaterialesState> {
   Future<void> subir(String seccionId, Material material) async {
     try {
       await subirMaterial(seccionId, material);
-      await loadMateriales(seccionId); // Recargar materiales
+      // Recargar materiales después de subir exitosamente
+      final materiales = await getMateriales(seccionId);
+      emit(MaterialesLoaded(materiales));
     } catch (e) {
       emit(MaterialesError('Error al subir material: $e'));
+      rethrow; // Permitir que la UI capture el error
     }
   }
 }
