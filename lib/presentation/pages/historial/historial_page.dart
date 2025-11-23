@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 
 import 'package:ulima_app/core/injector.dart';
 import 'package:ulima_app/domain/entity/pedido_entity.dart';
-
 import 'package:ulima_app/domain/usecase/pedido_usecase.dart';
+import 'package:ulima_app/domain/usecase/usuario_usecase.dart';
 
 class HistorialPage extends StatelessWidget {
   const HistorialPage({super.key});
@@ -17,7 +17,7 @@ class HistorialPage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: FutureBuilder<List<PedidoEntity>>(
-        future: injector<GetHistorial>().call(),
+        future: _loadHistorial(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -94,5 +94,17 @@ class HistorialPage extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<List<PedidoEntity>> _loadHistorial() async {
+    try {
+      // Obtener usuario actual
+      final usuario = await injector<GetUsuarioActual>()();
+      // Obtener historial filtrado por usuario
+      return await injector<GetHistorial>().call(usuarioId: usuario.id);
+    } catch (e) {
+      print('[HistorialPage] Error al cargar historial: $e');
+      rethrow;
+    }
   }
 }

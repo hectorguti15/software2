@@ -17,19 +17,23 @@ class GenerarYEnviarBoleta {
   Future<void> call() => repository.generarYEnviarBoleta(codigo);
 }
 
-class AgregarResena {
-  final PedidoRepository repository;
-  AgregarResena(this.repository);
-
-  Future<void> call() => repository.agregarResena();
-}
-
 class GetHistorial {
   final PedidoRepository repository;
 
   GetHistorial(this.repository);
 
-  Future<List<PedidoEntity>> call() async {
-    return await repository.getHistorial();
+  Future<List<PedidoEntity>> call({String? usuarioId}) async {
+    return await repository.getHistorial(usuarioId: usuarioId);
+  }
+}
+
+class CrearPedido {
+  final PedidoRepository repository;
+
+  CrearPedido(this.repository);
+
+  Future<void> call(
+      String usuarioId, List<PedidoItem> items, double total) async {
+    return await repository.crearPedido(usuarioId, items, total);
   }
 }

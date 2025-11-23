@@ -2,7 +2,6 @@ import 'package:ulima_app/domain/entity/evento_entity.dart';
 import 'package:ulima_app/domain/entity/material_entity.dart';
 import 'package:ulima_app/domain/entity/mensaje_entity.dart';
 import 'package:ulima_app/domain/entity/seccion_entity.dart';
-import 'package:ulima_app/domain/entity/usuario_entity.dart';
 import 'package:ulima_app/domain/repository/aulavirtual_repository.dart';
 
 // HU01: Obtener secciones asignadas al usuario
@@ -75,12 +74,4 @@ class CrearEvento {
 
   Future<void> call(String seccionId, Evento evento) =>
       repository.crearEvento(seccionId, evento);
-}
-
-// Obtener usuario actual
-class GetUsuarioActual {
-  final AulavirtualRepository repository;
-  GetUsuarioActual(this.repository);
-
-  Future<Usuario> call() => repository.getUsuarioActual();
 }

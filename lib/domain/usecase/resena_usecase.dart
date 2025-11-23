@@ -7,3 +7,14 @@ class GetResenaItem {
 
   Future<ResenaItem> call(String id) => repository.getResenaItem(id);
 }
+
+class AgregarResena {
+  final ResenaRepository repository;
+  AgregarResena(this.repository);
+
+  Future<void> call(String productId, String usuarioId, String comentario,
+      double calificacion) {
+    return repository.agregarComentario(
+        productId, usuarioId, comentario, calificacion);
+  }
+}

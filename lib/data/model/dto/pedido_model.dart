@@ -13,6 +13,21 @@ class PedidoModel {
     required this.total,
   });
 
+  factory PedidoModel.fromJson(Map<String, dynamic> json) {
+    return PedidoModel(
+      codigo: json['codigo'],
+      fecha: DateTime.parse(json['fecha']),
+      items: (json['items'] as List)
+          .map((item) => PedidoItem(
+                nombre: item['nombre'],
+                cantidad: item['cantidad'],
+                precio: (item['precio'] as num).toDouble(),
+              ))
+          .toList(),
+      total: (json['total'] as num).toDouble(),
+    );
+  }
+
   PedidoEntity toEntity() {
     return PedidoEntity(
       codigo: codigo,

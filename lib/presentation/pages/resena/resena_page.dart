@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:ulima_app/core/injector.dart';
-import 'package:ulima_app/domain/repository/pedido_repository.dart';
-import 'package:ulima_app/domain/usecase/pedido_usecase.dart';
+import 'package:ulima_app/domain/usecase/resena_usecase.dart'
+    as resena_usecases;
+import 'package:ulima_app/domain/usecase/usuario_usecase.dart';
 
 class ResenaPage extends StatefulWidget {
   final String codigoPedido;
-  const ResenaPage({required this.codigoPedido, super.key});
+  final String productId;
+  const ResenaPage(
+      {required this.codigoPedido, required this.productId, super.key});
 
   @override
   State<ResenaPage> createState() => _ResenaPageState();
@@ -17,16 +20,50 @@ class _ResenaPageState extends State<ResenaPage> {
   bool _enviando = false;
 
   void _agregarResena() async {
-    setState(() => _enviando = true);
-    final repository = injector<PedidoRepository>();
-    final agregarResena = AgregarResena(repository);
+    if (_calificacion == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor selecciona una calificación')),
+      );
+      return;
+    }
 
-    await agregarResena.call();
-    setState(() => _enviando = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reseña agregada')),
-    );
-    Navigator.pop(context);
+    if (_textoController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor escribe un comentario')),
+      );
+      return;
+    }
+
+    setState(() => _enviando = true);
+
+    try {
+      // Obtener usuario actual
+      final usuario = await injector<GetUsuarioActual>()();
+
+      // Agregar reseña con usuario actual
+      await injector<resena_usecases.AgregarResena>().call(
+        widget.productId,
+        usuario.id,
+        _textoController.text.trim(),
+        _calificacion.toDouble(),
+      );
+
+      if (mounted) {
+        setState(() => _enviando = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reseña agregada exitosamente')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      print('[ResenaPage] Error al agregar reseña: $e');
+      if (mounted) {
+        setState(() => _enviando = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al agregar reseña: $e')),
+        );
+      }
+    }
   }
 
   @override

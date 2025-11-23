@@ -6,6 +6,7 @@ class MaterialModel {
   final String tipo;
   final String url;
   final String fechaSubida;
+  final String? autorId;
   final String autorNombre;
 
   MaterialModel({
@@ -14,6 +15,7 @@ class MaterialModel {
     required this.tipo,
     required this.url,
     required this.fechaSubida,
+    this.autorId,
     required this.autorNombre,
   });
 
@@ -24,6 +26,7 @@ class MaterialModel {
       tipo: json['tipo'],
       url: json['url'],
       fechaSubida: json['fechaSubida'],
+      autorId: json['autorId'],
       autorNombre: json['autorNombre'],
     );
   }
@@ -35,6 +38,7 @@ class MaterialModel {
       'tipo': tipo,
       'url': url,
       'fechaSubida': fechaSubida,
+      'autorId': autorId,
       'autorNombre': autorNombre,
     };
   }

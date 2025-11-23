@@ -4,5 +4,7 @@ abstract class PedidoRepository {
   Future<void> enviarNotificacion(String codigo);
   Future<void> generarYEnviarBoleta(String codigo);
   Future<void> agregarResena();
-  Future<List<PedidoEntity>> getHistorial();
+  Future<List<PedidoEntity>> getHistorial({String? usuarioId});
+  Future<void> crearPedido(
+      String usuarioId, List<PedidoItem> items, double total);
 }

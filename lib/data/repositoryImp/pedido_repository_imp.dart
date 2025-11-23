@@ -20,8 +20,14 @@ class PedidoRepositoryImpl implements PedidoRepository {
   Future<void> agregarResena() async {}
 
   @override
-  Future<List<PedidoEntity>> getHistorial() async {
-    final models = await remoteDataSource.getHistorial();
+  Future<List<PedidoEntity>> getHistorial({String? usuarioId}) async {
+    final models = await remoteDataSource.getHistorial(usuarioId: usuarioId);
     return models.map((m) => m.toEntity()).toList();
+  }
+
+  @override
+  Future<void> crearPedido(
+      String usuarioId, List<PedidoItem> items, double total) async {
+    await remoteDataSource.crearPedido(usuarioId, items, total);
   }
 }

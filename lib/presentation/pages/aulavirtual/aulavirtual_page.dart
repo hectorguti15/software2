@@ -3,28 +3,90 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ulima_app/core/injector.dart';
 import 'package:ulima_app/domain/entity/seccion_entity.dart';
 import 'package:ulima_app/domain/usecase/aulavirtual_usecase.dart';
+import 'package:ulima_app/domain/usecase/usuario_usecase.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/cubit/secciones_cubit.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/cubit/secciones_state.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/seccion_detail_page.dart';
 import 'package:ulima_app/presentation/theme/colors.dart';
 
 // HU01: Asignar espacios automáticos por sección
-class AulavirtualPage extends StatelessWidget {
+class AulavirtualPage extends StatefulWidget {
   const AulavirtualPage({super.key});
 
   @override
+  State<AulavirtualPage> createState() => _AulavirtualPageState();
+}
+
+class _AulavirtualPageState extends State<AulavirtualPage> {
+  String? _usuarioId;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsuario();
+  }
+
+  Future<void> _loadUsuario() async {
+    try {
+      final usuario = await injector<GetUsuarioActual>()();
+      setState(() {
+        _usuarioId = usuario.id;
+        _loading = false;
+      });
+    } catch (e) {
+      print('[AulavirtualPage] Error al cargar usuario: $e');
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null || _usuarioId == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 60, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error al cargar usuario: $_error'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _loading = true;
+                  _error = null;
+                });
+                _loadUsuario();
+              },
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+
     return BlocProvider(
       create: (context) => SeccionesCubit(
         getSeccionesUsuario: injector<GetSeccionesUsuario>(),
-      )..loadSecciones('user001'), // TODO: Obtener ID del usuario autenticado
-      child: const AulavirtualView(),
+      )..loadSecciones(_usuarioId!),
+      child: AulavirtualView(usuarioId: _usuarioId!),
     );
   }
 }
 
 class AulavirtualView extends StatelessWidget {
-  const AulavirtualView({super.key});
+  final String usuarioId;
+
+  const AulavirtualView({super.key, required this.usuarioId});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +111,7 @@ class AulavirtualView extends StatelessWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
-                    context.read<SeccionesCubit>().loadSecciones('user001');
+                    context.read<SeccionesCubit>().loadSecciones(usuarioId);
                   },
                   child: const Text('Reintentar'),
                 ),

@@ -6,6 +6,7 @@ class EventoModel {
   final String descripcion;
   final String fecha;
   final String tipo;
+  final String? autorId;
 
   EventoModel({
     required this.id,
@@ -13,6 +14,7 @@ class EventoModel {
     required this.descripcion,
     required this.fecha,
     required this.tipo,
+    this.autorId,
   });
 
   factory EventoModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class EventoModel {
       descripcion: json['descripcion'],
       fecha: json['fecha'],
       tipo: json['tipo'],
+      autorId: json['autorId'],
     );
   }
 
@@ -32,6 +35,7 @@ class EventoModel {
       'descripcion': descripcion,
       'fecha': fecha,
       'tipo': tipo,
+      'autorId': autorId,
     };
   }
 

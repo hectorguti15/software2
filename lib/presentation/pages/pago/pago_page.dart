@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ulima_app/core/injector.dart';
+import 'package:ulima_app/domain/entity/pedido_entity.dart';
 import 'package:ulima_app/domain/repository/pedido_repository.dart';
 import 'package:ulima_app/domain/usecase/pedido_usecase.dart';
+import 'package:ulima_app/domain/usecase/usuario_usecase.dart';
 import 'package:ulima_app/presentation/pages/resena/resena_page.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -19,12 +21,15 @@ class PagoPage extends StatefulWidget {
 class _PagoPageState extends State<PagoPage> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  String? _codigoPedido;
+  bool _pedidoCreado = false;
 
   @override
   void initState() {
     super.initState();
     _initializeNotifications();
     _requestNotificationPermission();
+    _crearPedido();
   }
 
   Future<void> _initializeNotifications() async {
@@ -41,6 +46,42 @@ class _PagoPageState extends State<PagoPage> {
     final status = await Permission.notification.status;
     if (!status.isGranted) {
       await Permission.notification.request();
+    }
+  }
+
+  Future<void> _crearPedido() async {
+    try {
+      // Obtener usuario actual
+      final usuario = await injector<GetUsuarioActual>()();
+
+      // Convertir cart a List<PedidoItem>
+      final items = widget.cart.map((item) {
+        return PedidoItem(
+          id: item['id'] as String,
+          nombre: item['nombre'] as String,
+          cantidad: item['quantity'] as int,
+          precio: (item['precio'] as num).toDouble(),
+        );
+      }).toList();
+
+      // Crear pedido
+      await injector<CrearPedido>().call(usuario.id, items, widget.total);
+
+      // Generar código de pedido (en producción vendría del backend)
+      final codigo =
+          'PED${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+
+      setState(() {
+        _codigoPedido = codigo;
+        _pedidoCreado = true;
+      });
+    } catch (e) {
+      print('[PagoPage] Error al crear pedido: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al crear pedido: $e')),
+        );
+      }
     }
   }
 
@@ -110,12 +151,16 @@ class _PagoPageState extends State<PagoPage> {
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Número de pedido:'),
-                        Text('#12345',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text('Número de pedido:'),
+                        Text(
+                          _pedidoCreado && _codigoPedido != null
+                              ? '#$_codigoPedido'
+                              : 'Generando...',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                     const Divider(height: 24),
@@ -149,20 +194,22 @@ class _PagoPageState extends State<PagoPage> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () async {
-                final repository = injector<PedidoRepository>();
-                final enviarNotificacion =
-                    EnviarNotificacion(repository, "20221178");
-                await enviarNotificacion.call();
-                final status = await Permission.notification.status;
-                if (!status.isGranted) {
-                  await Permission.notification.request();
-                }
-                showOrderNotification();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Notificación enviada')),
-                );
-              },
+              onPressed: _pedidoCreado && _codigoPedido != null
+                  ? () async {
+                      final repository = injector<PedidoRepository>();
+                      final enviarNotificacion =
+                          EnviarNotificacion(repository, _codigoPedido!);
+                      await enviarNotificacion.call();
+                      final status = await Permission.notification.status;
+                      if (!status.isGranted) {
+                        await Permission.notification.request();
+                      }
+                      showOrderNotification();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Notificación enviada')),
+                      );
+                    }
+                  : null,
               icon: const Icon(Icons.notifications),
               label: const Text('Enviar notificación'),
               style: ElevatedButton.styleFrom(
@@ -174,15 +221,17 @@ class _PagoPageState extends State<PagoPage> {
             ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
-              onPressed: () async {
-                final repository = injector<PedidoRepository>();
-                final generarYEnviarBoleta =
-                    GenerarYEnviarBoleta(repository, "20221178");
-                await generarYEnviarBoleta.call();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Boleta enviada')),
-                );
-              },
+              onPressed: _pedidoCreado && _codigoPedido != null
+                  ? () async {
+                      final repository = injector<PedidoRepository>();
+                      final generarYEnviarBoleta =
+                          GenerarYEnviarBoleta(repository, _codigoPedido!);
+                      await generarYEnviarBoleta.call();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Boleta enviada')),
+                      );
+                    }
+                  : null,
               icon: const Icon(Icons.receipt_long),
               label: const Text('Generar y enviar boleta'),
               style: ElevatedButton.styleFrom(
@@ -194,14 +243,21 @@ class _PagoPageState extends State<PagoPage> {
             ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
-              onPressed: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ResenaPage(codigoPedido: "123"),
-                  ),
-                );
-              },
+              onPressed: _pedidoCreado && _codigoPedido != null
+                  ? () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ResenaPage(
+                            codigoPedido: _codigoPedido!,
+                            productId: widget.cart.isNotEmpty
+                                ? widget.cart.first['id'] as String
+                                : '',
+                          ),
+                        ),
+                      );
+                    }
+                  : null,
               icon: const Icon(Icons.rate_review),
               label: const Text('Agregar reseña'),
               style: ElevatedButton.styleFrom(

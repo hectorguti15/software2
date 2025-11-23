@@ -11,4 +11,11 @@ class ResenaRepositoryImpl implements ResenaRepository {
     final model = await remoteDataSource.getResenaItem(id);
     return model.toEntity();
   }
+
+  @override
+  Future<void> agregarComentario(String productId, String usuarioId,
+      String comentario, double calificacion) async {
+    await remoteDataSource.agregarComentario(
+        productId, usuarioId, comentario, calificacion);
+  }
 }

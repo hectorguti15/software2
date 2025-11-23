@@ -4,6 +4,7 @@ import 'package:ulima_app/core/injector.dart';
 import 'package:ulima_app/domain/entity/seccion_entity.dart';
 import 'package:ulima_app/domain/entity/usuario_entity.dart';
 import 'package:ulima_app/domain/usecase/aulavirtual_usecase.dart';
+import 'package:ulima_app/domain/usecase/usuario_usecase.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/cubit/eventos_cubit.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/cubit/materiales_cubit.dart';
 import 'package:ulima_app/presentation/pages/aulavirtual/cubit/mensajes_cubit.dart';

@@ -13,11 +13,13 @@ class PedidoEntity {
 }
 
 class PedidoItem {
+  final String? id; // ID del item del menú (menuItemId)
   final String nombre;
   final int cantidad;
   final double precio;
 
   PedidoItem({
+    this.id,
     required this.nombre,
     required this.cantidad,
     required this.precio,
